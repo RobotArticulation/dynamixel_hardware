@@ -101,9 +101,13 @@ CallbackReturn DynamixelHardware::on_init(const hardware_interface::HardwareInfo
     }
   }
 
+  synchronize_motor();
+
   enable_torque(false);
+
   set_control_mode(ControlMode::Position, true);
   set_joint_params();
+
   enable_torque(true);
 
   const ControlItem * goal_position =
@@ -337,6 +341,42 @@ return_type DynamixelHardware::write(const rclcpp::Time & /* time */, const rclc
       break;
   }
 
+}
+
+return_type DynamixelHardware::synchronize_motor()
+{
+  const char *log;
+
+  for (uint i = 0; i < info_.joints.size(); ++i) 
+  {
+    if (!dynamixel_workbench_.is_motor_synchronised(joint_ids_[i], &log)) 
+    {
+      if (!dynamixel_workbench_.synchronise_motor(joint_ids_[i], &log)) 
+      {
+        RCLCPP_FATAL(rclcpp::get_logger(kDynamixelHardware), "%s", log);
+        return return_type::ERROR;
+      }
+    }
+  }
+
+  std::vector<uint> synchronised_joints = {};
+  while (!std::all_of(joint_ids_.begin(), joint_ids_.end(), [=, &log, &synchronised_joints](uint id) 
+  { 
+        if (std::find(synchronised_joints.begin(), synchronised_joints.end(), id) == synchronised_joints.end() &&
+          dynamixel_workbench_.is_motor_synchronised(id, &log))
+        {
+          RCLCPP_INFO(rclcpp::get_logger(kDynamixelHardware), "Synchronised joint_id %d", id);
+          synchronised_joints.push_back(id);
+          return true;
+        }
+
+        RCLCPP_INFO(rclcpp::get_logger(kDynamixelHardware), "Synchronising joint_id %d...", id);
+        usleep(1e06);
+        return false;
+  }));
+
+  motor_synchronized_ = true;
+  return return_type::OK;
 }
 
 return_type DynamixelHardware::enable_torque(const bool enabled)

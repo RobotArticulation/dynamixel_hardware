@@ -86,6 +86,9 @@ public:
   return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
+  return_type synchronize_motor();
+  return_type is_motor_synchronised();
+
   return_type enable_torque(const bool enabled);
 
   return_type set_control_mode(const ControlMode & mode, const bool force_set = false);
@@ -100,6 +103,7 @@ private:
   std::map<const char * const, const ControlItem *> control_items_;
   std::vector<Joint> joints_;
   std::vector<uint8_t> joint_ids_;
+  bool motor_synchronized_{false};
   bool torque_enabled_{false};
   ControlMode control_mode_{ControlMode::Position};
   bool mode_changed_{false};
