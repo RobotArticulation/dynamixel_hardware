@@ -33,5 +33,7 @@
 
 .cache
 
+.vscode
+
 dynamixel-workbench
 dynamixel-workbench-msgs
