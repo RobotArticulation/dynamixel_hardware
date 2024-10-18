@@ -442,6 +442,13 @@ return_type DynamixelHardware::set_control_mode(const ControlMode & mode, const 
       enable_torque(false);
     }
 
+    // for (uint i = 0; i < joint_ids_.size(); ++i) {
+    //   if (!dynamixel_workbench_.setVelocityControlMode(joint_ids_[i], &log)) {
+    //     RCLCPP_FATAL(rclcpp::get_logger(kDynamixelHardware), "%s", log);
+    //     return return_type::ERROR;
+    //   }
+    // }
+
     for (uint i = 0; i < joint_ids_.size(); ++i) {
       if (!dynamixel_workbench_.setPositionControlMode(joint_ids_[i], &log)) {
         RCLCPP_FATAL(rclcpp::get_logger(kDynamixelHardware), "%s", log);
@@ -466,6 +473,8 @@ return_type DynamixelHardware::set_control_mode(const ControlMode & mode, const 
       rclcpp::get_logger(kDynamixelHardware), "Only position/velocity control are implemented");
     return return_type::ERROR;
   }
+
+
 
   return return_type::OK;
 }
